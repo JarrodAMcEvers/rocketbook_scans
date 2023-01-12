@@ -3,7 +3,7 @@ const path = require('path');
 const process = require('process');
 const { authenticate } = require('@google-cloud/local-auth');
 const { google } = require('googleapis');
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
@@ -58,20 +58,24 @@ downloadRocketbookScanFromGmail = async (auth) => {
     });
     console.log('Number of messages found:', rocketbookMessages.data.messages.length);
     for (let message of rocketbookMessages.data.messages) {
+        let filename = '';
         const messageId = message.id;
         const res = await gmail.users.messages.get({ userId: 'me', id: messageId });
-        for (let part of res.data.payload.parts) {
+        for await (let part of res.data.payload.parts) {
             if (part.body && part.body.attachmentId) {
                 console.log('Found email that has an attachment.')
-                const filename = part.filename.replace(/\s+/g, '');
+                filename = part.filename.replace(/\s+/g, '');
                 const attachmentId = part.body.attachmentId
                 console.log('Fetching Rocketbook attachment.');
                 const res = await gmail.users.messages.attachments.get({ userId: 'me', messageId: messageId, id: attachmentId });
                 console.log('Writing raw attachment data to file.');
                 await fs.writeFileSync(filename, Buffer.from(res.data.data, 'base64'));
-                return filename;
             }
         }
+        console.log('Archiving message.');
+        // archive the message
+        await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
+        return filename;
     }
 }
 
