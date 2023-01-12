@@ -3,7 +3,7 @@ const path = require('path');
 const process = require('process');
 const { authenticate } = require('@google-cloud/local-auth');
 const { google } = require('googleapis');
-const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/gmail.modify'];
+const SCOPES = ['https://www.googleapis.com/auth/gmail.modify'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
@@ -51,12 +51,18 @@ authorize = async () => {
 downloadRocketbookScanFromGmail = async (auth) => {
     const gmail = google.gmail({ version: 'v1', auth });
 
-    console.log('Getting emails using filter.');
+    console.log('Checking inbox for Rocketbook scans...');
     const rocketbookMessages = await gmail.users.messages.list({
         userId: 'me',
         q: 'label:inbox subject: Rocketbook Scan'
     });
-    console.log('Number of messages found:', rocketbookMessages.data.messages.length);
+    // exit if there are no messages
+    if (rocketbookMessages.data.resultSizeEstimate === 0) {
+        console.log('No Rcoketbook scans were found in the inbox, exiting.');
+        return '';
+    }
+
+    console.log('Number of messages found:', rocketbookMessages.data.resultSizeEstimate);
     for (let message of rocketbookMessages.data.messages) {
         let filename = '';
         const messageId = message.id;
@@ -73,7 +79,7 @@ downloadRocketbookScanFromGmail = async (auth) => {
             }
         }
         console.log('Archiving message.');
-        // archive the message
+        // remove the INBOX label from the message to archive it
         await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
         return filename;
     }
