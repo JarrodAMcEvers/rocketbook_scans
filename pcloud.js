@@ -1,7 +1,6 @@
-const axios = require('axios');
-const { redirect } = require('express/lib/response');
 const puppeteer = require('puppeteer');
 const PCLOUD_OAUTH_ENDPOINT = 'https://my.pcloud.com/oauth2/authorize';
+const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:8080'
 
 exports.authWithPCloud = async () => {
     console.log('Launching browser.');
@@ -9,7 +8,7 @@ exports.authWithPCloud = async () => {
     console.log('Launching new page.');
     const page = await browser.newPage();
     console.log('Going to pCloud OAuth2 endpoint.');
-    await page.goto(`${PCLOUD_OAUTH_ENDPOINT}?client_id=${process.env.CLIENT_ID}&response_type=token&redirect_uri=http://localhost:8080`);
+    await page.goto(`${PCLOUD_OAUTH_ENDPOINT}?client_id=${process.env.CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}`);
     console.log('Entering credentials.');
     await page.waitForSelector('input[name=email]');
     await page.focus('input[name=email]');
