@@ -8,7 +8,7 @@ exports.getAccessToken = async () => {
     console.log('Launching new page.');
     const page = await browser.newPage();
     console.log('Going to pCloud OAuth2 endpoint.');
-    await page.goto(`${PCLOUD_OAUTH_ENDPOINT}?client_id=TeNN5Kq4es4&response_type=token&redirect_uri=http://localhost:8080`);
+    await page.goto(`${PCLOUD_OAUTH_ENDPOINT}?client_id=${process.env.CLIENT_ID}&response_type=token&redirect_uri=http://localhost:8080`);
     await page.focus('input[name=email]');
     await page.keyboard.type('');
     await page.click('button[type=submit]');
