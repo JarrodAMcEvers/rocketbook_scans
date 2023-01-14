@@ -3,6 +3,7 @@ const path = require('path');
 const process = require('process');
 const { authenticate } = require('@google-cloud/local-auth');
 const { google } = require('googleapis');
+
 const SCOPES = ['https://www.googleapis.com/auth/gmail.modify'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
@@ -44,7 +45,6 @@ authorize = async () => {
     if (client.credentials) {
         await saveCredentials(client);
     }
-    console.log('returning client from authorize');
     return client;
 }
 
@@ -67,11 +67,12 @@ downloadRocketbookScanFromGmail = async (auth) => {
         let filename = '';
         const messageId = message.id;
         const res = await gmail.users.messages.get({ userId: 'me', id: messageId });
+        // iterate over the parts to find the part with the attachment
         for await (let part of res.data.payload.parts) {
             if (part.body && part.body.attachmentId) {
-                console.log('Found email that has an attachment.')
+                console.log('Found email that has an attachment.');
                 filename = part.filename.replace(/\s+/g, '');
-                const attachmentId = part.body.attachmentId
+                const attachmentId = part.body.attachmentId;
                 console.log('Fetching Rocketbook attachment.');
                 const res = await gmail.users.messages.attachments.get({ userId: 'me', messageId: messageId, id: attachmentId });
                 console.log('Writing raw attachment data to file.');
