@@ -1,6 +1,19 @@
 const puppeteer = require('puppeteer');
 const PCLOUD_OAUTH_ENDPOINT = 'https://my.pcloud.com/oauth2/authorize';
 const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:8080'
+class pCloud {
+    constructor(apiHost, accessToken, userID) {
+        self.apiHost = `https://${apiHost}`;
+        self.accessToken = accessToken;
+        self.userID = userID;
+        self.folderID = self.getFolderID();
+    }
+
+    async getFolderID() {
+        const response = await axios.get(`${self.apiHost}/listfolder?access_token=${self.accessToken}&path=${PCLOUD_PATH}`)
+        return response.metadata.folderid;
+    }
+}
 
 exports.authWithPCloud = async () => {
     console.log('Launching browser.');
