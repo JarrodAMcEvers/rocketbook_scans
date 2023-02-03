@@ -5,21 +5,21 @@ const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:8080'
 
 class pCloud {
     constructor(apiHost, accessToken, userID) {
-        self.apiHost = `https://${apiHost}`;
-        self.accessToken = accessToken;
-        self.userID = userID;
+        this.apiHost = `https://${apiHost}`;
+        this.accessToken = accessToken;
+        this.userID = userID;
     }
 
     fetchFolderId = async (pCloudPath) => {
-        const response = await axios.get(`${self.apiHost}/listfolder?access_token=${self.accessToken}&path=${pCloudPath}`);
-        self.folderId = response.metadata.folderid;
+        const response = await axios.get(`${this.apiHost}/listfolder?access_token=${this.accessToken}&path=${pCloudPath}`);
+        this.folderId = response.metadata.folderid;
     }
 
     uploadFileToFolder = async (filePath) => {
         let formData = new FormData();
         formData.append('file', filePath);
         const response = await axios.post(
-            `${self.apiHost}/uploadfile?access_token=${self.accessToken}&folderid=${self.folderID}`,
+            `${this.apiHost}/uploadfile?access_token=${this.accessToken}&folderid=${this.folderID}`,
             formData,
             { headers: { 'Content-Type': 'multipart/form-data' } }
         );
