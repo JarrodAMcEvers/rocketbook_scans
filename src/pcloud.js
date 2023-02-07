@@ -12,7 +12,7 @@ class pCloud {
 
     fetchFolderId = async (pCloudPath) => {
         const response = await axios.get(`${this.apiHost}/listfolder?access_token=${this.accessToken}&path=${pCloudPath}`);
-        this.folderId = response.metadata.folderid;
+        this.folderID = response.data.metadata.folderid;
     }
 
     uploadFileToFolder = async (filePath) => {
