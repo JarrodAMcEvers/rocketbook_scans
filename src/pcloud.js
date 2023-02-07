@@ -1,5 +1,6 @@
 const axios = require('axios');
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 const PCLOUD_OAUTH_ENDPOINT = 'https://my.pcloud.com/oauth2/authorize';
 const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:8080'
 
@@ -16,14 +17,13 @@ class pCloud {
     }
 
     uploadFileToFolder = async (filePath) => {
-        let formData = new FormData();
-        formData.append('file', filePath);
-        const response = await axios.post(
-            `${this.apiHost}/uploadfile?access_token=${this.accessToken}&folderid=${this.folderID}`,
-            formData,
-            { headers: { 'Content-Type': 'multipart/form-data' } }
+        const fileName = filePath.split('/').slice(-1)[0];
+        console.log(`Uploading ${fileName}.`);
+        const response = await axios.put(
+            `${this.apiHost}/uploadfile?access_token=${this.accessToken}&folderid=${this.folderID}&filename=${fileName}`,
+            fs.readFileSync(filePath)
         );
-        // TODO: figure out what the response body looks like, probably just a 202 or 200
+        console.log('Upload complete.');
         return response;
     }
 }
