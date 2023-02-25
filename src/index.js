@@ -15,7 +15,7 @@ loadExistingCredentials = async () => {
         console.log('Found existing credentials, continuing.');
         return google.auth.fromJSON(credentials);
     } catch (err) {
-        console.log('Could not find/read existing token file.', err);
+        console.log('Could not find/read existing credentials file.', err);
         return null;
     }
 }
@@ -35,17 +35,7 @@ saveCredentials = async (client) => {
 
 authorize = async () => {
     let client = await loadExistingCredentials();
-    if (client) {
-        return client;
-    }
-    client = await authenticate({
-        scopes: SCOPES,
-        keyfilePath: CREDENTIALS_PATH,
-    });
-    if (client.credentials) {
-        await saveCredentials(client);
-    }
-    return client;
+    return client ? client : null;
 }
 
 downloadRocketbookScanFromGmail = async (auth) => {
@@ -56,36 +46,39 @@ downloadRocketbookScanFromGmail = async (auth) => {
         userId: 'me',
         q: 'label:inbox subject: Rocketbook Scan'
     });
+
     // exit if there are no messages
     if (rocketbookMessages.data.resultSizeEstimate === 0) {
-        console.log('No Rcoketbook scans were found in the inbox, exiting.');
-        return '';
+        console.log('No Rocketbook scans were found in the inbox, exiting.');
+        return;
     }
 
     console.log('Number of messages found:', rocketbookMessages.data.resultSizeEstimate);
+    const downloadedFiles = [];
     for (let message of rocketbookMessages.data.messages) {
-        let filename = '';
         const messageId = message.id;
         const res = await gmail.users.messages.get({ userId: 'me', id: messageId });
         // iterate over the parts to find the part with the attachment
         for await (let part of res.data.payload.parts) {
             if (part.body && part.body.attachmentId) {
                 console.log('Found email that has an attachment.');
-                filename = part.filename.replace(/\s+/g, '');
+                const filename = part.filename.replace(/\s+/g, '');
                 const attachmentId = part.body.attachmentId;
                 console.log('Fetching Rocketbook attachment.');
                 const res = await gmail.users.messages.attachments.get({ userId: 'me', messageId: messageId, id: attachmentId });
                 console.log('Writing raw attachment data to file.');
                 await fs.writeFileSync(filename, Buffer.from(res.data.data, 'base64'));
+                downloadedFiles.push(filename);
             }
         }
+
         console.log('Archiving message.');
         // remove the INBOX label from the message to archive it
         await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
-        return filename;
     }
+    console.log('Files downloaded', downloadedFiles);
+
 }
 
 authorize()
     .then(auth => downloadRocketbookScanFromGmail(auth))
-    .then(filename => console.log('Filename:', filename));
