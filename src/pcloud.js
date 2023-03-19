@@ -65,5 +65,3 @@ exports.authWithPCloud = async () => {
 
     return queryParams;
 }
-
-exports.authWithPCloud();
