@@ -11,7 +11,7 @@ class pCloud {
 
     constructor() { }
 
-    authWithPCloud = async () => {
+    authenticate = async () => {
         console.log('Launching browser.');
         const browser = await puppeteer.launch({ headless: false });
 
