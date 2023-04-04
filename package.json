@@ -13,6 +13,6 @@
     "axios": "^1.3.2",
     "express": "^4.18.2",
     "googleapis": "^110.0.0",
-    "puppeteer": "^19.5.1"
+    "puppeteer": "^19.8.2"
   }
 }
