@@ -65,6 +65,9 @@ class pCloud {
 
     fetchAndSetFolderId = async (pCloudPath) => {
         const response = await axios.get(`${this.apiHost}/listfolder?access_token=${this.accessToken}&path=${pCloudPath}`);
+        if (response.data && response.data.error && response.data.error.includes('Directory') && response.data.error.includes('not exist')) {
+            throw new Error(`The ${pCloudPath} directory does not exist for this user. Please make sure the path is correct and try again.`);
+        }
         this.folderID = response.data.metadata.folderid;
     }
 
