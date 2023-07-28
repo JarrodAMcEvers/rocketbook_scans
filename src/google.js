@@ -79,7 +79,7 @@ downloadRocketbookScanFromGmail = async (auth) => {
         }
         console.log('Archiving message.');
         // remove the INBOX label from the message to archive it
-        // await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
+        await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
     }
     return;
 }
