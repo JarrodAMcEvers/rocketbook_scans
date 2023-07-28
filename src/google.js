@@ -57,31 +57,34 @@ exports.downloadRocketbookScanFromGmail = async (auth) => {
     });
     // exit if there are no messages
     if (rocketbookMessages.data.resultSizeEstimate === 0) {
-        console.log('No Rocketbook scans were found in the inbox, exiting.');
-        return;
+        console.log('No Rocketbook scans were found in the inbox.');
+        return [];
     }
 
     console.log('Number of messages found:', rocketbookMessages.data.resultSizeEstimate);
+    files = []
     for (let message of rocketbookMessages.data.messages) {
         let filename = '';
         const messageId = message.id;
         const res = await gmail.users.messages.get({ userId: 'me', id: messageId });
+
         for await (let part of res.data.payload.parts) {
             if (part.body && part.body.attachmentId) {
-                console.log('Found email that has an attachment.')
+                console.log('Found email that has an attachment.');
                 filename = part.filename.replace(/\s+/g, '');
                 const attachmentId = part.body.attachmentId
                 console.log('Fetching Rocketbook attachment.');
                 const res = await gmail.users.messages.attachments.get({ userId: 'me', messageId: messageId, id: attachmentId });
                 console.log('Writing raw attachment data to file.');
                 await fs.writeFileSync(filename, Buffer.from(res.data.data, 'base64'));
+                files.push(filename);
             }
         }
         console.log('Archiving message.');
         // remove the INBOX label from the message to archive it
         await gmail.users.messages.modify({ userId: 'me', id: messageId, requestBody: { removeLabelIds: ['INBOX'] } });
     }
-    return;
+    return files;
 }
 
 exports.authorize()
