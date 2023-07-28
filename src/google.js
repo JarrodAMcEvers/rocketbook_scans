@@ -32,7 +32,7 @@ saveCredentials = async (client) => {
     await fs.writeFileSync(TOKEN_PATH, payload);
 }
 
-authorize = async () => {
+exports.authorize = async () => {
     let client = await loadExistingCredentials();
     if (client) {
         return client;
@@ -47,7 +47,7 @@ authorize = async () => {
     return client;
 }
 
-downloadRocketbookScanFromGmail = async (auth) => {
+exports.downloadRocketbookScanFromGmail = async (auth) => {
     const gmail = google.gmail({ version: 'v1', auth });
 
     console.log('Checking inbox for Rocketbook scans...');
@@ -84,5 +84,6 @@ downloadRocketbookScanFromGmail = async (auth) => {
     return;
 }
 
-authorize()
-    .then(auth => downloadRocketbookScanFromGmail(auth));
+exports.authorize()
+    .then(auth => exports.downloadRocketbookScanFromGmail(auth))
+    .then(console.log)
