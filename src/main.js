@@ -1,5 +1,5 @@
 const google = require('./google');
-const pCloud = require('./pcloud');
+const pCloud = require('./pcloud')();
 
 google.authorize()
     .then(auth => google.downloadRocketbookScanFromGmail(auth))
@@ -9,11 +9,10 @@ google.authorize()
             process.exit(0);
         }
 
-        const pcloud = new pCloud();
-        await pcloud.authenticate();
-        await pcloud.fetchAndSetFolderId('/Documents/RocketbookScans');
+        await pCloud.authenticate();
+        await pCloud.fetchAndSetFolderId('/Documents/RocketbookScans');
         for (let file of files) {
             console.log(`Uploading ${file}`);
-            await pcloud.uploadFileToFolder(file);
+            await pCloud.uploadFileToFolder(file);
         }
     });
